@@ -20,6 +20,9 @@ void destroy(LinkedList *list) {
     ListNode *current = list->head;
     while (current != NULL) {
         ListNode *next = current->next;
+        if (current->data != NULL) { //lets overengineer a bit
+            free(current->data); //free data pointer
+        }
         free(current); //deallocate node
         current = next;
     }
@@ -36,7 +39,7 @@ void prepend(LinkedList *list, void *data) {
         if (newHead == NULL) {
             return; //alloc failure
         }
-        newhead->data = data;
+        newHead->data = data;
         list->head = newHead;
         list->tail = newHead;
         list->current = newHead;
@@ -45,6 +48,9 @@ void prepend(LinkedList *list, void *data) {
     }
 
     ListNode *newHead = malloc(sizeof(ListNode));
+    if (newHead == NULL) {
+            return; //alloc failure
+    }
     newHead->data = data;
     list->head->prev = newHead;
     newHead->prev = NULL;
@@ -76,6 +82,9 @@ void append(LinkedList *list, void *data) {
     }
 
     ListNode *newTail = malloc(sizeof(ListNode));
+    if (newTail == NULL) {
+        return; //alloc failure
+    }
     newTail->data = data;
     list->tail->next = newTail;
     newTail->prev = list->tail;
@@ -85,4 +94,67 @@ void append(LinkedList *list, void *data) {
     list->current = newTail;
     return;
 
+}
+
+
+void insertBefore(LinkedList *list, void *data) {
+    if (list == NULL) {
+        return;
+    }
+
+    ListNode *newNode = malloc(sizeof(ListNode));
+    if (newNode == NULL) { //allocation failure
+        return;
+    }
+
+    newNode->data = data;
+
+    if (list->size == 0 || list->current == NULL) {
+        newNode->prev = NULL;
+        newNode->next = NULL;
+        list->head = newNode;
+        list->tail = newNode;
+        list->current = newNode;
+    } else {
+        newNode->prev = list->current->prev;
+        newNode->next = list->current;
+        if (list->current->prev != NULL) {
+            list->current->prev->next = newNode;
+        } else {
+            list->head = newNode; //new node becomes new head
+        }
+        list->current->prev = newNode;
+    }
+    list->size++;
+}
+
+void addAftercurrent(LinkedList *list, void *data){
+    if (list == NULL) {
+        return;
+    }
+
+    ListNode *newNode = malloc(sizeof(ListNode));
+    if (newNode == NULL) { //allocation failure
+        return;
+    }
+
+    newNode->data = data;
+
+    if (list->size == 0 || list->current == NULL) {
+        newNode->prev = NULL;
+        newNode->next = NULL;
+        list->head = newNode;
+        list->tail = newNode;
+        list->current = newNode;
+    } else {
+        newNode->prev = list->current;
+        newNode->next = list->current->next;
+        if (list->current->next != NULL) {
+            list->current->next->prev = newNode;
+        } else {
+            list->tail = newNode; // new node becomes new tail
+        }
+        list->current->next = newNode;
+    }
+    list->size++;
 }
