@@ -158,3 +158,146 @@ void addAftercurrent(LinkedList *list, void *data){
     }
     list->size++;
 }
+
+void *removeCurrent(LinkedList *list) {
+    if (list == NULL || list->current == NULL) {
+        return NULL;
+    }
+
+    ListNode *node = list->current;
+    void *data = node->data;
+
+    if (node->prev != NULL) {
+        node->prev->next = node->next;
+    } else {
+        list->head = node->next;
+    }
+
+    if (node->next != NULL) {
+        node->next->prev = node->prev;
+    } else {
+        list->tail = node->prev;
+    }
+
+    if (node->next != NULL) {
+        list->current = node->next;
+    } else {
+        list->current = node->prev;
+    }
+
+    free(node);
+    list->size--;
+
+    return data;
+}
+
+}
+
+void *removeFirst(LinkedList *list) {
+    if (list == NULL || list->head == NULL) {
+        return NULL;
+    }
+
+    ListNode *node = list->head;
+    void *data = node->data;
+    list->head = node->next;
+
+    if (list->head != NULL) {
+        list->head->prev = NULL;
+    } else {
+        list->tail = NULL;
+    }
+
+    if (list->current == node) {
+        list->current = list->head;
+    }
+
+    free(node);
+    list->size--;
+
+    return data;
+}
+
+void *removeLast(LinkedList *list) {
+    if (list == NULL || list->tail == NULL) {
+        return NULL;
+    }
+
+    ListNode *node = list->tail;
+    void *data = node->data;
+    list->tail = node->prev;
+
+    if (list->tail != NULL) {
+        list->tail->next = NULL;
+    } else {
+        list->head = NULL;
+    }
+
+    if (list->current == node) {
+        list->current = list->tail;
+    }
+
+    free(node);
+    list->size--;
+    return data;
+}
+
+bool prev(LinkedList *list) {
+     if (list == NULL) {
+        return 0;
+    }
+
+    if (list->current == list->head) {
+        return 0;
+    }
+
+    list->current = list->current->prev;
+    return 1;
+}
+
+
+bool next(LinkedList *list) {
+    if (list == NULL) {
+        return 0;
+    }
+
+    if (list->current == list->tail) {
+        return 0;
+    }
+
+    list->current = list->current->next;
+    return 1;
+}
+
+void *getCurrent(const LinkedList *list) {
+    if (list == NULL || list->current == NULL) {
+        return NULL;
+    }
+
+    return list->current->data;
+}
+
+size_t size(const LinkedList *list) {
+    if (list == NULL) {
+        return 0;
+    }
+
+    return list->size;
+}
+
+void *search(LinkedList *list, bool (*comparator)(void *, void *), void *comparisonArg) {
+    if (list == NULL || comparator == NULL) {
+        return NULL;
+    }
+
+    ListNode *current = list->head;
+    while (current != NULL) {
+        if (comparator(current->data, comparisonArg)) { //compare 
+            return current->data;
+        }
+        current = current->next;
+    }
+
+    return NULL; //no matching node found
+}
+
