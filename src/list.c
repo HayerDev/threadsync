@@ -1,4 +1,5 @@
 #include "list.h"
+#include <stdio.h>
 
 LinkedList *create() {
     LinkedList *list = malloc(sizeof(LinkedList));
@@ -20,12 +21,10 @@ void destroy(LinkedList *list) {
     ListNode *current = list->head;
     while (current != NULL) {
         ListNode *next = current->next;
-        if (current->data != NULL) { //lets overengineer a bit
-            free(current->data); //free data pointer
-        }
         free(current); //deallocate node
         current = next;
     }
+    
     free(list); //deallocate list
 }
 
@@ -130,17 +129,21 @@ void insertBefore(LinkedList *list, void *data) {
 
 void addAftercurrent(LinkedList *list, void *data){
     if (list == NULL) {
+
         return;
     }
 
     ListNode *newNode = malloc(sizeof(ListNode));
     if (newNode == NULL) { //allocation failure
+
         return;
     }
+
 
     newNode->data = data;
 
     if (list->size == 0 || list->current == NULL) {
+
         newNode->prev = NULL;
         newNode->next = NULL;
         list->head = newNode;
@@ -150,6 +153,7 @@ void addAftercurrent(LinkedList *list, void *data){
         newNode->prev = list->current;
         newNode->next = list->current->next;
         if (list->current->next != NULL) {
+    
             list->current->next->prev = newNode;
         } else {
             list->tail = newNode; // new node becomes new tail
@@ -191,7 +195,7 @@ void *removeCurrent(LinkedList *list) {
     return data;
 }
 
-}
+
 
 void *removeFirst(LinkedList *list) {
     if (list == NULL || list->head == NULL) {
