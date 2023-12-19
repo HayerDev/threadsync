@@ -4,8 +4,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//initialize the monitor with a specified number of resources or conditions
-void init(int);
+#include "list.h"
+#include <pthread.h>
+
+typedef enum { READER, WRITER } ThreadType;
+
+typedef struct {
+    ThreadType type;
+    pthread_cond_t condition;
+} WaitData;
+
+static LinkedList *monitorList;
+static pthread_mutex_t monitorMutex;
+static int activeReaders = 0, activeWriters = 0, waitingReaders = 0, waitingWriters = 0;
+
+//initialize the monitor
+void initMonitor(int resources);
 
 //enter monitor with mutex
 void enterMonitor();
@@ -14,9 +28,12 @@ void enterMonitor();
 void leaveMonitor();
 
 //wait while critical area busy
-void wait(int);
+void wait(ThreadType type);
 
 //signal critical area is free
-void signal(int);
+void signal();
+
+//free monitor
+void destroyMonitor();
 
 #endif
