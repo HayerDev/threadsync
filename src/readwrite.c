@@ -1,5 +1,8 @@
 #include "readwrite.h"
 
+static int activeReaders = 0;
+static int activeWriters = 0;
+
 void init() {
     initMonitor(1); //initialize the monitor with the required resources
 }
@@ -7,7 +10,7 @@ void init() {
 void beginRead() {
     enterMonitor();
     while (activeWriters > 0) { //we can exclude other reads because this doesnt cause deadlock
-        wait(READER); // wait if a writer is active
+        waitMon(READER);  // wait if a writer is active
     }
     activeReaders++; 
     leaveMonitor();
@@ -16,8 +19,8 @@ void beginRead() {
 void endRead() {
     enterMonitor();
     activeReaders--; 
-    if (activeReaders == 0) {
-        signal(); //signal waiting writers if no active readers left
+    if (activeReaders == 0 && size(monitorList) > 0) {
+        signalMon();  //signal waiting writers if no active readers left
     }
     leaveMonitor();
 }
@@ -25,7 +28,7 @@ void endRead() {
 void beginWrite() {
     enterMonitor();
     while (activeReaders > 0 || activeWriters > 0) {
-        wait(WRITER); //wait if readers or another writer is active
+        waitMon(WRITER); //wait if readers or another writer is active
     }
     activeWriters = 1; 
     leaveMonitor();
@@ -33,19 +36,22 @@ void beginWrite() {
 
 void endWrite() {
     enterMonitor();
-    activeWriters = 0; // No more active 
-    signal(); //signal waiting readers and writers
+    activeWriters = 0;  // No more active
+    signalMon(); //signal waiting readers and writers
     leaveMonitor();
 }
 
 void reader() {
+    sleep(rand() % 3); // random delay before starting to read
     beginRead();
-    //perform reading operations...
+    printf("Reading...\n");
     endRead();
 }
 
 void writer() {
+    sleep(rand() % 3); // random delay before starting to write
     beginWrite();
-    //perform writing operations...
+    printf("Writing...\n");
     endWrite();
 }
+

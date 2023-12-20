@@ -48,6 +48,9 @@ void *removeFirst(LinkedList *list);
 //remove and return the element at the end of the list
 void *removeLast(LinkedList *list);
 
+// remove a specific node from the list
+void removeNode(LinkedList *list, ListNode *node);
+
 //move the current pointer to the previous node
 bool prev(LinkedList *list);
 
@@ -62,5 +65,7 @@ size_t size(const LinkedList *list);
 
 // search the list and return the first node for which the comparator returns true
 void *search(LinkedList *list, bool (*comparator)(void *, void *), void *comparisonArg);
+//iterate and find node
+ListNode* findNode(LinkedList *list, void *data);
 
 #endif // LIST_H

@@ -1,5 +1,20 @@
 #include "monitor.h"
 
+LinkedList *monitorList; 
+pthread_mutex_t monitorMutex; 
+
+//helper function to create a new WaitData
+static WaitData *newWaitData(ThreadType type) {
+    WaitData *waitData = malloc(sizeof(WaitData));
+    if (!waitData) {
+        perror("Failed to allocate WaitData");
+        exit(EXIT_FAILURE);
+    }
+    waitData->type = type;
+    pthread_cond_init(&waitData->condition, NULL);
+    return waitData;
+}
+
 void initMonitor(int resources) {
     monitorList = create();
     pthread_mutex_init(&monitorMutex, NULL);
@@ -13,54 +28,29 @@ void leaveMonitor() {
     pthread_mutex_unlock(&monitorMutex);
 }
 
-void wait(ThreadType type) {
-    WaitData *data = malloc(sizeof(WaitData));
-    data->type = type;
-    pthread_cond_init(&data->condition, NULL);
-    append(monitorList, data);
-
-    if (type == READER) {
-        waitingReaders++;
-        while (activeWriters > 0 || (waitingWriters > 0 && activeReaders == 0)) {
-            pthread_cond_wait(&data->condition, &monitorMutex);
-        }
-        waitingReaders--;
-        activeReaders++;
-    } else { //WRITER
-        waitingWriters++;
-        while (activeReaders > 0 || activeWriters > 0) {
-            pthread_cond_wait(&data->condition, &monitorMutex);
-        }
-        waitingWriters--;
-        activeWriters++;
-    }
+void waitMon(ThreadType type) {
+    WaitData *waitData = newWaitData(type);
+    append(monitorList, waitData);
+    pthread_cond_wait(&waitData->condition, &monitorMutex);
 }
 
-void signal() {
-    if (monitorList->size > 0) {
-        ListNode *node = monitorList->head;
-        while (node != NULL) {
-            WaitData *data = (WaitData *)node->data;
-            if (data->type == READER && waitingWriters == 0) {
-                pthread_cond_signal(&data->condition);
-                break;
-            } else if (data->type == WRITER && activeReaders == 0 && activeWriters == 0) {
-                pthread_cond_signal(&data->condition);
-                break;
-            }
-            node = node->next;
-        }
+void signalMon() {
+    if (size(monitorList) > 0) {
+        ListNode *first = monitorList->head;
+        WaitData *waitData = (WaitData *)first->data;
+        pthread_cond_signal(&waitData->condition);
+        removeFirst(monitorList);
     }
 }
 
 void destroyMonitor() {
-    ListNode *node = monitorList->head;
-    while (node != NULL) {
-        WaitData *data = (WaitData *)node->data;
-        pthread_cond_destroy(&data->condition);
-        free(data);
-        node = node->next;
+    while (size(monitorList) > 0) {
+        ListNode *first = monitorList->head;
+        WaitData *waitData = (WaitData *)removeFirst(monitorList);
+        pthread_cond_destroy(&waitData->condition);
+        free(waitData);
     }
     destroy(monitorList);
     pthread_mutex_destroy(&monitorMutex);
 }
+

@@ -246,6 +246,41 @@ void *removeLast(LinkedList *list) {
     return data;
 }
 
+void removeNode(LinkedList *list, ListNode *node) {
+    if (list == NULL || node == NULL) {
+        return;
+    }
+
+    if (node == list->head) {
+        list->head = node->next;
+        if (list->head != NULL) {
+            list->head->prev = NULL;
+        }
+    }
+
+    if (node == list->tail) {
+        list->tail = node->prev;
+        if (list->tail != NULL) {
+            list->tail->next = NULL;
+        }
+    }
+
+    if (node->prev != NULL) {
+        node->prev->next = node->next;
+    }
+    if (node->next != NULL) {
+        node->next->prev = node->prev;
+    }
+
+    if (list->current == node) {
+        list->current = node->next != NULL ? node->next : node->prev;
+    }
+
+    list->size--;
+    free(node);
+}
+
+
 bool prev(LinkedList *list) {
      if (list == NULL) {
         return 0;
@@ -304,4 +339,18 @@ void *search(LinkedList *list, bool (*comparator)(void *, void *), void *compari
 
     return NULL; //no matching node found
 }
+
+ListNode* findNode(LinkedList *list, void *data) {
+    if (list == NULL) return NULL;
+
+    ListNode *current = list->head;
+    while (current != NULL) {
+        if (current->data == data) {
+            return current;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
 

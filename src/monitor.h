@@ -14,9 +14,8 @@ typedef struct {
     pthread_cond_t condition;
 } WaitData;
 
-static LinkedList *monitorList;
-static pthread_mutex_t monitorMutex;
-static int activeReaders = 0, activeWriters = 0, waitingReaders = 0, waitingWriters = 0;
+extern LinkedList *monitorList;
+extern pthread_mutex_t monitorMutex; 
 
 //initialize the monitor
 void initMonitor(int resources);
@@ -28,10 +27,10 @@ void enterMonitor();
 void leaveMonitor();
 
 //wait while critical area busy
-void wait(ThreadType type);
+void waitMon(ThreadType type); //rename due to conflict
 
 //signal critical area is free
-void signal();
+void signalMon(); //rename due to conflict
 
 //free monitor
 void destroyMonitor();
